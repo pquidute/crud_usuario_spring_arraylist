@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Complete User CRUD</title>
+</head>
+<body>
+
+<h2>User List</h2>
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody id="users-table">
+    <!-- users will be listed here -->
+    </tbody>
+</table>
+
+<h2 id="form-title">New User</h2>
+<form id="user-form">
+    ID: <input type="number" id="user-id" required><br><br>
+    Name: <input type="text" id="user-name" required><br><br>
+    <button type="submit">Save User</button>
+    <button type="button" onclick="resetForm()">Cancel</button>
+</form>
+
+<script>
+    let editMode = false;
+
+    function loadUsers() {
+        fetch('http://localhost:8080/users')
+            .then(response => response.json())
+            .then(users => {
+                const table = document.getElementById('users-table');
+                table.innerHTML = '';
+
+                users.forEach(user => {
+                    const row = document.createElement('tr');
+
+                    const cellId = document.createElement('td');
+                    cellId.textContent = user.id;
+
+                    const cellName = document.createElement('td');
+                    cellName.textContent = user.name;
+
+                    const cellActions = document.createElement('td');
+                    cellActions.innerHTML = `
+                        <button onclick="editUser(${user.id}, '${user.name}')">Edit</button>
+                        <button onclick="deleteUser(${user.id})">Delete</button>
+                    `;
+
+                    row.appendChild(cellId);
+                    row.appendChild(cellName);
+                    row.appendChild(cellActions);
+
+                    table.appendChild(row);
+                });
+            });
+    }
+
+    document.getElementById('user-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const id = parseInt(document.getElementById('user-id').value);
+        const name = document.getElementById('user-name').value;
+
+        const method = editMode ? 'PUT' : 'POST';
+        const url = editMode ? `http://localhost:8080/users/${id}` : 'http://localhost:8080/users';
+
+        fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, name })
+        })
+        .then(() => {
+            alert(`User ${editMode ? 'updated' : 'added'} successfully!`);
+            loadUsers();
+            resetForm();
+        })
+        .catch(() => alert('Error saving user.'));
+    });
+
+    function editUser(id, name) {
+        editMode = true;
+        document.getElementById('form-title').textContent = 'Edit User';
+        document.getElementById('user-id').value = id;
+        document.getElementById('user-id').disabled = true;
+        document.getElementById('user-name').value = name;
+    }
+
+    function deleteUser(id) {
+        if (confirm('Do you want to delete this user?')) {
+            fetch(`http://localhost:8080/users/${id}`, { method: 'DELETE' })
+                .then(() => {
+                    alert('User deleted successfully!');
+                    loadUsers();
+                })
+                .catch(() => alert('Error deleting user.'));
+        }
+    }
+
+    function resetForm() {
+        editMode = false;
+        document.getElementById('form-title').textContent = 'New User';
+        document.getElementById('user-id').value = '';
+        document.getElementById('user-id').disabled = false;
+        document.getElementById('user-name').value = '';
+    }
+
+    loadUsers();
+</script>
+
+</body>
+</html>
