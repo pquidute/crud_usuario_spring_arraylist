@@ -21,11 +21,22 @@ public class UserController {
     }
 
     @PutMapping
-    public String updateUser(@RequestBody User user,@RequestBody int id){
+    public String updateUser(@RequestBody User user){
         for (User u : userArrayList){
             if (u.getId().equals(user.getId())){
                 u.setName(user.getName());
                 return user.getName() + " successfully updated!";
+            }
+        }
+        return "user not found!";
+    }
+
+    @DeleteMapping
+    public String deleteUser(@RequestBody User user){
+        for (User u : userArrayList){
+            if (u.getId().equals(user.getId())){
+                userArrayList.remove(u);
+                return user.getName() + " successfully deleted!";
             }
         }
         return "user not found!";
