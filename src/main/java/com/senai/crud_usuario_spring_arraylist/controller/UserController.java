@@ -14,14 +14,24 @@ public class UserController {
         return userArrayList;
     }
 
+    @GetMapping("/{id}")
+    public User getUserByID(@PathVariable Integer id){
+        for (User u : userArrayList){
+            if (u.getId() == id){
+                return u;
+            }
+        }
+        return null;
+    }
+
     @PostMapping
     public String addUser(@RequestBody User user){
         userArrayList.add(user);
         return user.getName() + " successfully registered!";
     }
 
-    @PutMapping
-    public String updateUser(@RequestBody User user){
+    @PutMapping("/{id}")
+    public String updateUser(@RequestBody User user, @PathVariable Integer id){
         for (User u : userArrayList){
             if (u.getId().equals(user.getId())){
                 u.setName(user.getName());
@@ -31,12 +41,12 @@ public class UserController {
         return "user not found!";
     }
 
-    @DeleteMapping
-    public String deleteUser(@RequestBody User user){
+    @DeleteMapping("/{id}")
+    public String deleteUser(@PathVariable Integer id){
         for (User u : userArrayList){
-            if (u.getId().equals(user.getId())){
+            if (u.getId() == id){
                 userArrayList.remove(u);
-                return user.getName() + " successfully deleted!";
+                return u.getName() + " successfully deleted!";
             }
         }
         return "user not found!";
